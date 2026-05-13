@@ -1,10 +1,9 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import TextInput from "./TextInput";
 import RadioButton from "./RadioButton";
 import CheckboxInput from "./CheckboxInput";
 import TextArea from "./TextArea";
 import IFrame from "./IFrame";
-import FileUpload from "./FileUpload";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 
@@ -24,6 +23,7 @@ const RmaForm = () => {
   const [rmaNumber] = useState(generateRmaNumber);
 
   const [formData, setFormData] = useState({
+    rmaRequestType: "",
     firstName: "",
     lastName: "",
     company: "",
@@ -52,10 +52,6 @@ const RmaForm = () => {
       ...prevData,
       [name]: type === "checkbox" ? checked : value,
     }));
-  };
-
-  const handleFileChange = (file) => {
-    setSelectedFile(file);
   };
 
   const handleFormSubmit = async (e) => {
@@ -118,6 +114,7 @@ const RmaForm = () => {
         toast.success("Form submitted successfully!");
         // Reset form and file state
         setFormData({
+          rmaRequestType: "",
           firstName: "",
           lastName: "",
           company: "",
@@ -175,6 +172,23 @@ const RmaForm = () => {
         <p className="rma-number">
           <strong>RMA Number:</strong> {rmaNumber}
         </p>
+        <div>
+          <label>
+            RMA Request Type:<span className="required-asterisk"> *</span>
+          </label>
+          <select
+            name="rmaRequestType"
+            value={formData.rmaRequestType}
+            onChange={handleInputChange}
+            required
+          >
+            <option value="">Select a request type</option>
+            <option value="Warranty request">Warranty request</option>
+            <option value="Return or exchange request within 30 days of the invoice date">
+              Return or exchange request within 30 days of the invoice date
+            </option>
+          </select>
+        </div>
         <TextInput
           label="First Name:"
           name="firstName"
@@ -421,7 +435,28 @@ const RmaForm = () => {
         <p>
         By clicking "Submit," you acknowledge that you have completed the Pre-RMA test if it was necessary for the product.
         </p>
-                <br />
+        <h2>Policies</h2>
+        <ul className="policies-list">
+          <li>
+            <a
+              href="https://artek.energy/policies/refund-policy"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              Returns & Refund Policy
+            </a>
+          </li>
+          <li>
+            <a
+              href="https://artek.energy/policies/shipping-policy"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              Shipping Policy
+            </a>
+          </li>
+        </ul>
+        <br />
         {/* Submit Button */}
         <button type="submit" disabled={isSubmitting}>
           {isSubmitting ? "Submitting..." : "Submit"}
