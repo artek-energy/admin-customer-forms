@@ -97,6 +97,7 @@ function appendFormData(e) {
 
   sheet.appendRow([
     params.rmaNumber || '',
+    params.rmaRequestType || '',
     params.firstName || '',
     params.lastName || '',
     params.company || '',
@@ -130,6 +131,7 @@ function createRmaPdf(data) {
       <body>
         <h1>Victron RMA Submission Summary</h1>
         <p><strong>RMA Number:</strong> ${data.rmaNumber || ""}</p>
+        <p><strong>RMA Request Type:</strong> ${data.rmaRequestType || ""}</p>
         <p><strong>First Name:</strong> ${data.firstName || ""}</p>
         <p><strong>Last Name:</strong> ${data.lastName || ""}</p>
         <p><strong>Company:</strong> ${data.company || ""}</p>

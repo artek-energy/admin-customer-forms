@@ -186,6 +186,10 @@ a:hover {
   margin: 2rem;
 }
 
+.policies-list {
+  margin: 0 0 24px 2rem;
+}
+
 /* Submit button */
 button[type="submit"] {
   display: inline-block;
