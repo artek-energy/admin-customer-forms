@@ -439,10 +439,7 @@ function sendAllEmails(userEmail, pdfBlob, data, fileUrl) {
     const subjectUser = "Your RMA Form Submission - PDF Summary";
     const messageUser = `Dear ${data.firstName || "User"},\n\nThank you for submitting your RMA form.\n\nRMA Number: ${rmaNumber}\nRMA Request Type: ${rmaRequestType}\n\nAttached is a PDF summary of your submission.\n\nBest regards,\nArtek`;
 
-    GmailApp.sendEmail(userEmail, subjectUser, messageUser, {
-      from: "sales@artek.energy",
-      attachments: [pdfBlob],
-    });
+    GmailApp.sendEmail(userEmail, subjectUser, messageUser, buildRmaEmailOptions(pdfBlob));
     Logger.log(`Sent RMA PDF to user: ${userEmail}`);
   }
 
@@ -451,11 +448,24 @@ function sendAllEmails(userEmail, pdfBlob, data, fileUrl) {
   const subjectOwner = "New RMA Submission - PDF & File Upload";
   const messageOwner = `A new RMA submission has been received. Attached is the PDF summary.\n\nRMA Number: ${rmaNumber}\nRMA Request Type: ${rmaRequestType}\nName: ${data.firstName} ${data.lastName}\nEmail: ${data.email}\n\nUploaded File: ${uploadedFileMessage}\n\nBest regards,\nArtek`;
 
-  GmailApp.sendEmail(ownerEmails, subjectOwner, messageOwner, {
-    from: "sales@artek.energy",
-    attachments: [pdfBlob],
-  });
+  GmailApp.sendEmail(ownerEmails, subjectOwner, messageOwner, buildRmaEmailOptions(pdfBlob));
   Logger.log(`Sent RMA PDF + file URL to owners: ${ownerEmails}`);
+}
+
+function buildRmaEmailOptions(pdfBlob) {
+  const senderAlias = "sales@artek.energy";
+  const options = {
+    name: "Artek Energy",
+    attachments: [pdfBlob],
+  };
+
+  if (GmailApp.getAliases().indexOf(senderAlias) !== -1) {
+    options.from = senderAlias;
+  } else {
+    Logger.log(`Sender alias not available, using executing account instead: ${senderAlias}`);
+  }
+
+  return options;
 }
 
 /**
