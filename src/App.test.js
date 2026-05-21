@@ -1,8 +1,20 @@
-import { render, screen } from '@testing-library/react';
-import App from './App';
+import { render, screen } from "@testing-library/react";
+import App from "./App";
 
-test('renders learn react link', () => {
+test("renders the RMA request type field and options", () => {
+  window.history.pushState({}, "", "/rma");
+
   render(<App />);
-  const linkElement = screen.getByText(/learn react/i);
-  expect(linkElement).toBeInTheDocument();
+
+  const requestTypeSelect = screen.getByRole("combobox");
+
+  expect(requestTypeSelect).toHaveAttribute("name", "rmaRequestType");
+  expect(
+    screen.getByRole("option", { name: "Warranty request" })
+  ).toBeInTheDocument();
+  expect(
+    screen.getByRole("option", {
+      name: "Return or exchange request within 30 days of the invoice date",
+    })
+  ).toBeInTheDocument();
 });

@@ -122,35 +122,212 @@ function appendFormData(e) {
  * 2) Generates an HTML-based PDF summarizing the form submission.
  */
 function createRmaPdf(data) {
+  const generalFields = [
+    ["RMA Number", data.rmaNumber],
+    ["RMA Request Type", data.rmaRequestType],
+    ["First Name", data.firstName],
+    ["Last Name", data.lastName],
+    ["Company", data.company],
+    ["Email", data.email],
+    ["Phone", data.phone],
+    ["Shipping Address", data.shippingAddress]
+  ];
+
+  const productFields = [
+    ["Artek Order #", data.artekOrderNumber],
+    ["Product SKU", data.productSku],
+    ["Victron Energy Product", formatRmaValue(data.isVictronProduct)],
+    ["Serial Number", data.serialNumber],
+    ["Manufacturer", data.manufacturer]
+  ];
+
+  const diagnosticFields = [
+    ["Installation Date", data.installationDate],
+    ["Failure Date", data.failureDate],
+    ["Firmware Updated?", formatRmaValue(data.firmwareUpdated)],
+    ["Firmware Version", data.firmwareVersion],
+    ["Failure Description", data.failureDescription],
+    ["Acknowledged Shipping Costs", formatRmaValue(data.acknowledgeShippingCosts)]
+  ];
+
   const htmlContent = `
     <html>
       <head>
         <meta charset="UTF-8">
-        <title>Victron RMA Submission Summary</title>
+        <title>RMA Submission Summary</title>
+        <style>
+          @page {
+            margin: 24px;
+          }
+
+          * {
+            box-sizing: border-box;
+          }
+
+          body {
+            margin: 0;
+            background: #eef2f6;
+            color: #333333;
+            font-family: "Segoe UI", Arial, sans-serif;
+            font-size: 12px;
+            line-height: 1.45;
+          }
+
+          .page {
+            background: #ffffff;
+            border: 1px solid #d0d5dd;
+            border-radius: 8px;
+            overflow: hidden;
+          }
+
+          .header {
+            background: #38526e;
+            color: #ffffff;
+            padding: 24px 28px;
+          }
+
+          .eyebrow {
+            font-size: 10px;
+            font-weight: 700;
+            letter-spacing: 1.4px;
+            margin: 0 0 6px;
+            text-transform: uppercase;
+          }
+
+          h1 {
+            color: #ffffff;
+            font-size: 28px;
+            line-height: 1.15;
+            margin: 0 0 16px;
+          }
+
+          .meta {
+            display: table;
+            width: 100%;
+          }
+
+          .meta-item {
+            display: table-cell;
+            padding-right: 14px;
+            vertical-align: top;
+          }
+
+          .meta-label {
+            color: #cfd9e5;
+            display: block;
+            font-size: 10px;
+            font-weight: 700;
+            letter-spacing: 0.8px;
+            margin-bottom: 3px;
+            text-transform: uppercase;
+          }
+
+          .meta-value {
+            color: #ffffff;
+            display: block;
+            font-size: 13px;
+            font-weight: 700;
+          }
+
+          .content {
+            padding: 24px 28px 28px;
+          }
+
+          .notice {
+            background: #fff8f8;
+            border: 1px solid #f2c3c3;
+            border-left: 4px solid #d32f2f;
+            border-radius: 6px;
+            color: #703030;
+            margin: 0 0 20px;
+            padding: 10px 12px;
+          }
+
+          .section {
+            margin-top: 20px;
+          }
+
+          h2 {
+            border-bottom: 2px solid #38526e;
+            color: #38526e;
+            font-size: 16px;
+            margin: 0 0 10px;
+            padding-bottom: 5px;
+          }
+
+          table {
+            border-collapse: collapse;
+            margin-bottom: 4px;
+            width: 100%;
+          }
+
+          tr:nth-child(even) td {
+            background: #fafbfc;
+          }
+
+          td {
+            border-bottom: 1px solid #e4e7ec;
+            padding: 8px 10px;
+            vertical-align: top;
+          }
+
+          td.label {
+            color: #444444;
+            font-weight: 700;
+            width: 34%;
+          }
+
+          td.value {
+            color: #333333;
+          }
+
+          .footer {
+            border-top: 1px solid #e4e7ec;
+            color: #667085;
+            font-size: 11px;
+            margin-top: 22px;
+            padding-top: 12px;
+          }
+        </style>
       </head>
       <body>
-        <h1>Victron RMA Submission Summary</h1>
-        <p><strong>RMA Number:</strong> ${data.rmaNumber || ""}</p>
-        <p><strong>RMA Request Type:</strong> ${data.rmaRequestType || ""}</p>
-        <p><strong>First Name:</strong> ${data.firstName || ""}</p>
-        <p><strong>Last Name:</strong> ${data.lastName || ""}</p>
-        <p><strong>Company:</strong> ${data.company || ""}</p>
-        <p><strong>Email:</strong> ${data.email || ""}</p>
-        <p><strong>Phone:</strong> ${data.phone || ""}</p>
-        <p><strong>Shipping Address:</strong> ${data.shippingAddress || ""}</p>
-        <p><strong>Artek Order #:</strong> ${data.artekOrderNumber || ""}</p>
-        <p><strong>Product SKU:</strong> ${data.productSku || ""}</p>
-        <p><strong>Victron Energy Product:</strong> ${data.isVictronProduct || ""}</p>
-        <p><strong>Serial Number:</strong> ${data.serialNumber || ""}</p>
-        <p><strong>Manufacturer:</strong> ${data.manufacturer || ""}</p>
-        <p><strong>Installation Date:</strong> ${data.installationDate || ""}</p>
-        <p><strong>Failure Date:</strong> ${data.failureDate || ""}</p>
-        <p><strong>Firmware Updated?:</strong> ${data.firmwareUpdated || ""}</p>
-        <p><strong>Firmware Version:</strong> ${data.firmwareVersion || ""}</p>
-        <p><strong>Failure Description:</strong> ${data.failureDescription || ""}</p>
-        <p><strong>Acknowledge Shipping Costs?:</strong> ${data.acknowledgeShippingCosts || false}</p>
-        <hr>
-        <p><em>This PDF is an auto-generated summary of your RMA form submission.</em></p>
+        <div class="page">
+          <div class="header">
+            <p class="eyebrow">Artek Energy</p>
+            <h1>RMA Submission Summary</h1>
+            <div class="meta">
+              <div class="meta-item">
+                <span class="meta-label">RMA Number</span>
+                <span class="meta-value">${escapeHtml(data.rmaNumber || "N/A")}</span>
+              </div>
+              <div class="meta-item">
+                <span class="meta-label">Request Type</span>
+                <span class="meta-value">${escapeHtml(data.rmaRequestType || "N/A")}</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="content">
+            <p class="notice">This PDF is an auto-generated summary of the RMA form submission.</p>
+
+            <div class="section">
+              <h2>General Information</h2>
+              <table>${renderSummaryRows(generalFields)}</table>
+            </div>
+
+            <div class="section">
+              <h2>Product Information</h2>
+              <table>${renderSummaryRows(productFields)}</table>
+            </div>
+
+            <div class="section">
+              <h2>Dates & Diagnostics</h2>
+              <table>${renderSummaryRows(diagnosticFields)}</table>
+            </div>
+
+            <p class="footer">Generated by the Artek RMA form workflow.</p>
+          </div>
+        </div>
       </body>
     </html>
   `;
@@ -166,6 +343,33 @@ function createRmaPdf(data) {
     .setName("RMA_Form_Summary.pdf");
 
   return pdfBlob;
+}
+
+function renderSummaryRows(fields) {
+  return fields
+    .map(function(field) {
+      return `<tr><td class="label">${escapeHtml(field[0])}</td><td class="value">${escapeHtml(formatRmaValue(field[1]))}</td></tr>`;
+    })
+    .join("");
+}
+
+function formatRmaValue(value) {
+  if (value === true || value === "true") return "Yes";
+  if (value === false || value === "false") return "No";
+  if (value === "yes") return "Yes";
+  if (value === "no") return "No";
+  if (value === "na") return "Not Applicable";
+  if (value === undefined || value === null || value === "") return "N/A";
+  return value;
+}
+
+function escapeHtml(value) {
+  return String(value)
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#39;");
 }
 
 /**
@@ -221,10 +425,14 @@ function uploadFileToDrive(blob, folderName, fileName, fileDescription, parentFo
  *   - The owners (attached PDF summary + link to the user file)
  */
 function sendAllEmails(userEmail, pdfBlob, data, fileUrl) {
+  const rmaNumber = data.rmaNumber || "N/A";
+  const rmaRequestType = data.rmaRequestType || "N/A";
+  const uploadedFileMessage = fileUrl || "No file uploaded";
+
   // 1) If user provided an email, send them the PDF summary
   if (userEmail) {
     const subjectUser = "Your RMA Form Submission - PDF Summary";
-    const messageUser = `Dear ${data.firstName || "User"},\n\nThank you for submitting your RMA form. Attached is a PDF summary of your submission.\n\nBest regards,\nArtek`;
+    const messageUser = `Dear ${data.firstName || "User"},\n\nThank you for submitting your RMA form.\n\nRMA Number: ${rmaNumber}\nRMA Request Type: ${rmaRequestType}\n\nAttached is a PDF summary of your submission.\n\nBest regards,\nArtek`;
 
     GmailApp.sendEmail(userEmail, subjectUser, messageUser, {
       from: "sales@artek.energy",
@@ -236,7 +444,7 @@ function sendAllEmails(userEmail, pdfBlob, data, fileUrl) {
   // 2) Owners get the PDF + link to the user's uploaded file
   const ownerEmails  = "sales@artek.energy";
   const subjectOwner = "New RMA Submission - PDF & File Upload";
-  const messageOwner = `A new RMA submission has been received. Attached is the PDF summary.\n\nName: ${data.firstName} ${data.lastName}\nEmail: ${data.email}\n\nUploaded File: ${fileUrl}\n\nBest regards,\nArtek`;
+  const messageOwner = `A new RMA submission has been received. Attached is the PDF summary.\n\nRMA Number: ${rmaNumber}\nRMA Request Type: ${rmaRequestType}\nName: ${data.firstName} ${data.lastName}\nEmail: ${data.email}\n\nUploaded File: ${uploadedFileMessage}\n\nBest regards,\nArtek`;
 
   GmailApp.sendEmail(ownerEmails, subjectOwner, messageOwner, {
     from: "sales@artek.energy",
