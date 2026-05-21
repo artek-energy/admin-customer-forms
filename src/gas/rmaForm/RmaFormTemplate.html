@@ -348,9 +348,14 @@ function createRmaPdf(data) {
 function renderSummaryRows(fields) {
   return fields
     .map(function(field) {
-      return `<tr><td class="label">${escapeHtml(field[0])}</td><td class="value">${escapeHtml(formatRmaValue(field[1]))}</td></tr>`;
+      return `<tr><td class="label">${escapeHtml(field[0])}</td><td class="value">${escapeHtml(displayRmaValue(field[1]))}</td></tr>`;
     })
     .join("");
+}
+
+function displayRmaValue(value) {
+  if (value === undefined || value === null || value === "") return "N/A";
+  return value;
 }
 
 function formatRmaValue(value) {
