@@ -45,6 +45,31 @@ form h2 {
   padding-bottom: 6px;
 }
 
+.section-heading-with-note {
+  display: flex;
+  align-items: flex-end;
+  flex-wrap: wrap;
+  gap: 8px 14px;
+  margin-top: 28px;
+  margin-bottom: 16px;
+  border-bottom: 2px solid #38526e;
+  padding-bottom: 6px;
+}
+
+.section-heading-with-note h2 {
+  margin: 0;
+  border-bottom: 0;
+  padding-bottom: 0;
+}
+
+.section-heading-note {
+  color: #d32f2f;
+  font-size: 13px;
+  font-weight: 700;
+  line-height: 1.4;
+  margin-bottom: 2px;
+}
+
 form h3 {
   margin-top: 20px;
   margin-bottom: 10px;
@@ -362,6 +387,11 @@ button[type="submit"]:disabled {
 
   form h2 {
     font-size: 19px;
+  }
+
+  .section-heading-with-note {
+    align-items: flex-start;
+    flex-direction: column;
   }
 
   button[type="submit"],

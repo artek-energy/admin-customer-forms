@@ -239,6 +239,12 @@ const RmaForm = () => {
           onChange={handleInputChange}
           required
         />
+        <div className="section-heading-with-note">
+          <h2>Product Information</h2>
+          <p className="section-heading-note">
+            We cannot process RMA requests that omit the serial number and SKU.
+          </p>
+        </div>
         <TextInput
           label="Product SKU:"
           name="productSku"
@@ -269,10 +275,11 @@ const RmaForm = () => {
         {isVictronProduct === "no" && (
           <>
             <TextInput
-              label="Serial Number (if applicable):"
+              label="Serial Number:"
               name="serialNumber"
               value={formData.serialNumber}
               onChange={handleInputChange}
+              required
             />
             <TextInput
               label="Manufacturer:"

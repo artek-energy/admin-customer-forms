@@ -102,6 +102,7 @@ Important RMA Apps Script values to review before deployment:
 - Google Drive folder ID used to store generated files
 - Google Sheets spreadsheet ID used to log submissions
 - Sender and recipient email addresses
+- To send RMA emails from `sales@artek.energy`, the Apps Script executing account must have `sales@artek.energy` configured as an available Gmail send-as alias. Sending from `sales@artek.energy` to `sales@artek.energy` is valid; if the alias is unavailable, Gmail sends from the executing account instead.
 
 Required external configuration and secrets should be managed outside the repository. Do not commit production folder IDs, spreadsheet IDs, account credentials, or service-specific secrets in source control.
 

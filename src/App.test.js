@@ -18,3 +18,16 @@ test("renders the RMA request type field and options", () => {
     })
   ).toBeInTheDocument();
 });
+
+test("renders the RMA product information processing note", () => {
+  window.history.pushState({}, "", "/rma");
+
+  render(<App />);
+
+  expect(screen.getByText("Product Information")).toBeInTheDocument();
+  expect(
+    screen.getByText(
+      "We cannot process RMA requests that omit the serial number and SKU."
+    )
+  ).toBeInTheDocument();
+});

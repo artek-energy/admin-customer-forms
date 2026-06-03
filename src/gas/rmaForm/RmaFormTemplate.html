@@ -1,6 +1,9 @@
 /**
  * Main entry point for POST requests (from your React form).
  */
+const RMA_SENDER_EMAIL = "sales@artek.energy";
+const RMA_OWNER_EMAILS = RMA_SENDER_EMAIL;
+
 function doPost(e) {
   // 1) Preflight check: if no post data, assume OPTIONS or empty request
   if (!e.postData || !e.postData.contents) {
@@ -444,7 +447,7 @@ function sendAllEmails(userEmail, pdfBlob, data, fileUrl) {
   }
 
   // 2) Owners get the PDF + link to the user's uploaded file
-  const ownerEmails  = "sales@artek.energy";
+  const ownerEmails  = RMA_OWNER_EMAILS;
   const subjectOwner = "New RMA Submission - PDF & File Upload";
   const messageOwner = `A new RMA submission has been received. Attached is the PDF summary.\n\nRMA Number: ${rmaNumber}\nRMA Request Type: ${rmaRequestType}\nName: ${data.firstName} ${data.lastName}\nEmail: ${data.email}\n\nUploaded File: ${uploadedFileMessage}\n\nBest regards,\nArtek`;
 
@@ -453,9 +456,10 @@ function sendAllEmails(userEmail, pdfBlob, data, fileUrl) {
 }
 
 function buildRmaEmailOptions(pdfBlob) {
-  const senderAlias = "sales@artek.energy";
+  const senderAlias = RMA_SENDER_EMAIL;
   const options = {
     name: "Artek Energy",
+    replyTo: RMA_SENDER_EMAIL,
     attachments: [pdfBlob],
   };
 
