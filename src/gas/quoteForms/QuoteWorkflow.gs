@@ -71,7 +71,9 @@ function submitQuote_(event, form) {
     record = [submissionId, hash, reference, receivedAt, QUOTE_STATUS_.PROCESSING,
       "", "", "NOT_STARTED", "NOT_STARTED", QUOTE_STAGE_.RESERVED, receivedAt];
     logRow = log.getLastRow() + 1;
-    saveQuoteRecord_(log, logRow, record);
+    // appendRow also grows a full ledger; later stages update this reserved row.
+    log.appendRow(record);
+    SpreadsheetApp.flush();
 
     // Reserve the attempt before side effects. An interrupted attempt requires review;
     // it must never automatically replay a row append or an uncertain email send.

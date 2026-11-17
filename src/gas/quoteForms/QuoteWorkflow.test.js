@@ -86,43 +86,53 @@ const EXPECTED_ROWS = {
 
 function mockSheet(name, initialRows) {
   const rows = initialRows.map((row) => [...row]);
+  let capacity = Math.max(1000, rows.length);
   const writes = jest.fn();
   const sheet = {
     rows,
     writes,
     getName: jest.fn(() => name),
     getMaxColumns: jest.fn(() => 50),
+    getMaxRows: jest.fn(() => capacity),
     getLastRow: jest.fn(() => rows.length),
     setFrozenRows: jest.fn(),
-    appendRow: jest.fn((row) => rows.push([...row])),
-    getRange: jest.fn((firstRow, firstColumn, rowCount, columnCount) => ({
-      getValues: () => Array.from({ length: rowCount }, (_, offset) =>
-        Array.from({ length: columnCount }, (_, column) =>
-          rows[firstRow - 1 + offset]?.[firstColumn - 1 + column] ?? "")),
-      setValues: (values) => {
-        writes(values);
-        values.forEach((row, offset) => {
-          const index = firstRow - 1 + offset;
-          rows[index] = rows[index] || [];
-          row.forEach((value, column) => {
-            rows[index][firstColumn - 1 + column] = value;
+    appendRow: jest.fn((row) => {
+      rows.push([...row]);
+      capacity = Math.max(capacity, rows.length);
+    }),
+    getRange: jest.fn((firstRow, firstColumn, rowCount, columnCount) => {
+      if (firstRow + rowCount - 1 > capacity) {
+        throw new Error("Range exceeds the sheet row capacity");
+      }
+      return {
+        getValues: () => Array.from({ length: rowCount }, (_, offset) =>
+          Array.from({ length: columnCount }, (_, column) =>
+            rows[firstRow - 1 + offset]?.[firstColumn - 1 + column] ?? "")),
+        setValues: (values) => {
+          writes(values);
+          values.forEach((row, offset) => {
+            const index = firstRow - 1 + offset;
+            rows[index] = rows[index] || [];
+            row.forEach((value, column) => {
+              rows[index][firstColumn - 1 + column] = value;
+            });
           });
-        });
-      },
-      createTextFinder: (text) => {
-        const finder = {
-          matchEntireCell: jest.fn(() => finder),
-          matchCase: jest.fn(() => finder),
-          findNext: () => {
-            const index = rows.findIndex((row, offset) =>
-              offset >= firstRow - 1 && offset < firstRow - 1 + rowCount &&
-              row[firstColumn - 1] === text);
-            return index < 0 ? null : { getRow: () => index + 1 };
-          },
-        };
-        return finder;
-      },
-    })),
+        },
+        createTextFinder: (text) => {
+          const finder = {
+            matchEntireCell: jest.fn(() => finder),
+            matchCase: jest.fn(() => finder),
+            findNext: () => {
+              const index = rows.findIndex((row, offset) =>
+                offset >= firstRow - 1 && offset < firstRow - 1 + rowCount &&
+                row[firstColumn - 1] === text);
+              return index < 0 ? null : { getRow: () => index + 1 };
+            },
+          };
+          return finder;
+        },
+      };
+    }),
   };
   return sheet;
 }
@@ -132,7 +142,7 @@ function loadQuoteApp(form, options = {}) {
   const quoteSheet = mockSheet(sheetName, [["Existing header"], ["Existing customer"]]);
   const sheets = { [sheetName]: quoteSheet };
   if (options.ledger !== "missing") {
-    sheets[LOG_NAME] = mockSheet(LOG_NAME, [LOG_HEADERS]);
+    sheets[LOG_NAME] = mockSheet(LOG_NAME, options.ledgerRows || [LOG_HEADERS]);
   }
   const properties = {
     QUOTE_SPREADSHEET_ID: "test-spreadsheet",
@@ -190,6 +200,7 @@ function expectNoEffects(app) {
   expect(app.folder.createFile).not.toHaveBeenCalled();
   expect(app.context.MailApp.sendEmail).not.toHaveBeenCalled();
   Object.values(app.sheets).forEach((sheet) => {
+    expect(sheet.appendRow).not.toHaveBeenCalled();
     expect(sheet.writes).not.toHaveBeenCalled();
   });
 }
@@ -221,6 +232,25 @@ describe.each(["stationary", "mobile"])("%s quote workflow", (form) => {
     expect(app.folder.createFile).toHaveBeenCalledTimes(1);
     expect(app.context.MailApp.sendEmail).toHaveBeenCalledTimes(2);
     expect(app.sheets[LOG_NAME].rows).toHaveLength(2);
+  });
+
+  test("accepts a submission when the ledger has used all allocated rows", () => {
+    const ledgerRows = [LOG_HEADERS, ...Array.from({ length: 999 }, (_, index) => [
+      "previous-submission-" + index, "existing-hash", "Previous quote", "",
+      "COMPLETE", "", "", "SENT", "SENT", "COMPLETE", "",
+    ])];
+    const app = loadQuoteApp(form, { ledgerRows });
+    const log = app.sheets[LOG_NAME];
+    expect(log.getLastRow()).toBe(log.getMaxRows());
+
+    expect(app.submit().status).toBe("success");
+    expect(log.rows).toHaveLength(1001);
+    expect(log.rows[1000][0]).toBe(SUBMISSION_ID);
+    expect(log.rows[1000][4]).toBe("COMPLETE");
+    expect(log.rows.slice(0, 1000)).toEqual(ledgerRows);
+    expect(app.quoteSheet.appendRow).toHaveBeenCalledTimes(1);
+    expect(app.folder.createFile).toHaveBeenCalledTimes(1);
+    expect(app.context.MailApp.sendEmail).toHaveBeenCalledTimes(2);
   });
 
   test("rejects changed answers using a previously accepted submission ID", () => {

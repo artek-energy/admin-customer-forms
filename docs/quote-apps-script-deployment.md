@@ -50,8 +50,9 @@ and Script Properties, not committed source.
 
 Emails use `MailApp`, sent by the executing sales account, with the display name
 **Artek Energy** and reply-to **sales@artek.energy**. This does not require access
-to read the sales inbox. Internal notification recipients are configured
-separately with `QUOTE_OWNER_EMAILS`.
+to read the sales inbox. Customers continue receiving their confirmation and PDF.
+Both forms send internal notifications to **sales@artek.energy**, configured with
+`QUOTE_OWNER_EMAILS`.
 
 ## Set each project's Script Properties
 
@@ -62,11 +63,9 @@ separately with `QUOTE_OWNER_EMAILS`.
 | `QUOTE_SHEET_NAME` | `StationaryFormQuotes` | `MobileFormQuotes` |
 | `QUOTE_OWNER_EMAILS` | Comma-separated internal recipients | Comma-separated internal recipients |
 
-The local handoff files have the IDs supplied with the existing scripts. Their
-internal recipients retain `info@artek.energy,claire@artek.energy`; the stationary
-script's `arterk.energy` typo is corrected. Set `QUOTE_OWNER_EMAILS` to
-`sales@artek.energy` if internal notifications should instead follow the RMA
-routing. Missing recipient configuration defaults to sales.
+The local handoff files have the IDs supplied with the existing scripts. Both
+set `QUOTE_OWNER_EMAILS` to `sales@artek.energy`, replacing the previous info/Claire
+routing. Missing recipient configuration also defaults to sales.
 
 Script Properties belong to the project, not to an individual deployment
 version. Configure both projects separately. The manifest requests only Drive,
@@ -115,8 +114,9 @@ The React form action names and field names remain compatible:
 Set these variables to the new sales-owned `/exec` URLs before building. These
 public endpoint URLs are embedded in the browser bundle; they are not secrets.
 For local builds, `.env.local` can contain the two values shown in `.env.example`.
-Existing URLs remain fallbacks until replacements are supplied, so building
-without the variables will continue targeting the existing deployments.
+Both forms default to the sales-owned deployment URLs supplied on November 17,
+2026. Set these variables only to override those defaults for a different
+deployment.
 
 ```powershell
 $env:REACT_APP_STATIONARY_QUOTE_URL = 'PASTE_STATIONARY_EXEC_URL'

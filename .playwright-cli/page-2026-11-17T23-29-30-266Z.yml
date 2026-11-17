@@ -1,0 +1,167 @@
+- generic [ref=e4]:
+  - heading "Mobile Quotation Form" [level=1] [ref=e5]
+  - heading "PART I - General" [level=2] [ref=e6]
+  - generic [ref=e7]:
+    - generic [ref=e8]: "First Name:"
+    - textbox [ref=e9]
+  - generic [ref=e10]:
+    - generic [ref=e11]: "Last Name:"
+    - textbox [ref=e12]
+  - generic [ref=e13]:
+    - generic [ref=e14]: "Company:"
+    - textbox [ref=e15]
+  - generic [ref=e16]:
+    - generic [ref=e17]: "Email:"
+    - textbox [ref=e18]
+  - generic [ref=e19]:
+    - generic [ref=e20]: "Phone:"
+    - textbox [ref=e21]
+  - generic [ref=e22]:
+    - generic [ref=e23]: "Shipping Street Address Line 1:"
+    - textbox [ref=e24]
+  - generic [ref=e25]:
+    - generic [ref=e26]: "Shipping Street Address Line 2:"
+    - textbox [ref=e27]
+  - generic [ref=e28]:
+    - generic [ref=e29]: "Shipping City:"
+    - textbox [ref=e30]
+  - generic [ref=e31]:
+    - generic [ref=e32]: "Shipping State:"
+    - textbox [ref=e33]
+  - generic [ref=e34]:
+    - generic [ref=e35]: "Shipping Postal Code:"
+    - spinbutton [ref=e36]
+  - generic [ref=e37]:
+    - generic [ref=e38]: "Country:"
+    - textbox [ref=e39]
+  - heading "I am interested in a quote for the following service(s):" [level=3] [ref=e40]
+  - generic [ref=e42]:
+    - checkbox "Electrical system design & components for DIY installation" [ref=e43] [cursor=pointer]
+    - text: Electrical system design & components for DIY installation
+  - generic [ref=e45]:
+    - checkbox "Electrical system design & professional installation at Artek" [ref=e46] [cursor=pointer]
+    - text: Electrical system design & professional installation at Artek
+  - heading "Platform" [level=3] [ref=e47]
+  - generic [ref=e48]:
+    - generic [ref=e49]: "Platform (Ex: van, RV, semi-truck, trailer, military, marine):"
+    - textbox [ref=e50]
+  - heading "Application" [level=3] [ref=e51]
+  - generic [ref=e53]:
+    - generic [ref=e54]:
+      - radio "Commercial" [ref=e55] [cursor=pointer]
+      - text: Commercial
+    - generic [ref=e56]:
+      - radio "Recreational" [ref=e57] [cursor=pointer]
+      - text: Recreational
+    - generic [ref=e58]:
+      - radio "Other" [ref=e59] [cursor=pointer]
+      - text: Other
+  - heading "PART II - System Specifications" [level=2] [ref=e60]
+  - generic [ref=e61]:
+    - generic [ref=e62]: "Vehicle year, make, model:"
+    - textbox [ref=e63]
+  - generic [ref=e64]:
+    - generic [ref=e65]: "Vehicle engine type:"
+    - textbox [ref=e66]
+  - generic [ref=e67]:
+    - generic [ref=e68]: "How long would you prefer to be off-grid / without shore power? (days):"
+    - spinbutton [ref=e69]
+  - heading "High-draw appliances" [level=3] [ref=e70]
+  - generic [ref=e72]:
+    - checkbox "Air Conditioner" [ref=e73] [cursor=pointer]
+    - text: Air Conditioner
+  - generic [ref=e75]:
+    - checkbox "Induction Cookstove" [ref=e76] [cursor=pointer]
+    - text: Induction Cookstove
+  - generic [ref=e78]:
+    - checkbox "Microwave" [ref=e79] [cursor=pointer]
+    - text: Microwave
+  - generic [ref=e81]:
+    - checkbox "Hair Dryer" [ref=e82] [cursor=pointer]
+    - text: Hair Dryer
+  - generic [ref=e84]:
+    - checkbox "Blender" [ref=e85] [cursor=pointer]
+    - text: Blender
+  - generic [ref=e87]:
+    - checkbox "Other" [ref=e88] [cursor=pointer]
+    - text: Other
+  - generic [ref=e89]:
+    - generic [ref=e90]: Do you want to be able to use multiple high-draw appliances on high at the same time?
+    - generic [ref=e91]:
+      - generic [ref=e92]:
+        - radio "Yes" [ref=e93] [cursor=pointer]
+        - text: "Yes"
+      - generic [ref=e94]:
+        - radio "No" [ref=e95] [cursor=pointer]
+        - text: "No"
+  - generic [ref=e96]:
+    - generic [ref=e97]: Do you have a generator?
+    - generic [ref=e98]:
+      - generic [ref=e99]:
+        - radio "Yes" [ref=e100] [cursor=pointer]
+        - text: "Yes"
+      - generic [ref=e101]:
+        - radio "No" [ref=e102] [cursor=pointer]
+        - text: "No"
+  - heading "Solar" [level=3] [ref=e103]
+  - generic [ref=e104]:
+    - generic [ref=e105]: How much solar would you ideally like to include? (Watts)
+    - spinbutton [ref=e106]
+  - generic [ref=e107]:
+    - generic [ref=e108]: What type of solar mount do you prefer?
+    - generic [ref=e109]:
+      - generic [ref=e110]:
+        - radio "Roof mount" [ref=e111] [cursor=pointer]
+        - text: Roof mount
+      - generic [ref=e112]:
+        - radio "Deployable" [ref=e113] [cursor=pointer]
+        - text: Deployable
+      - generic [ref=e114]:
+        - radio "Both" [ref=e115] [cursor=pointer]
+        - text: Both
+  - heading "Shore Power Preferences" [level=3] [ref=e116]
+  - generic [ref=e117]:
+    - generic [ref=e118]: What is your shore power connection?
+    - generic [ref=e119]:
+      - generic [ref=e120]:
+        - radio "15A" [ref=e121] [cursor=pointer]
+        - text: 15A
+      - generic [ref=e122]:
+        - radio "30A" [ref=e123] [cursor=pointer]
+        - text: 30A
+      - generic [ref=e124]:
+        - radio "50A" [ref=e125] [cursor=pointer]
+        - text: 50A
+  - generic [ref=e126]:
+    - generic [ref=e127]: Do you have 240V loads?
+    - generic [ref=e128]:
+      - generic [ref=e129]:
+        - radio "No" [ref=e130] [cursor=pointer]
+        - text: "No"
+      - generic [ref=e131]:
+        - radio "Yes" [ref=e132] [cursor=pointer]
+        - text: "Yes"
+  - heading "System Voltage" [level=3] [ref=e133]
+  - generic [ref=e134]:
+    - generic [ref=e135]: Do you have a preferred system voltage?
+    - generic [ref=e136]:
+      - generic [ref=e137]:
+        - radio "No" [ref=e138] [cursor=pointer]
+        - text: "No"
+      - generic [ref=e139]:
+        - radio "Yes" [ref=e140] [cursor=pointer]
+        - text: "Yes"
+  - heading "Other Preferences" [level=3] [ref=e141]
+  - generic [ref=e142]:
+    - generic [ref=e143]: Do you have a preferred battery bank capacity (in Kw or Ah)?
+    - textbox [ref=e144]
+  - generic [ref=e145]:
+    - generic [ref=e146]: What is your budget?
+    - textbox [ref=e147]
+  - generic [ref=e148]:
+    - generic [ref=e149]: What is your timeline?
+    - textbox [ref=e150]
+  - generic [ref=e151]:
+    - generic [ref=e152]: Any other details you would like us to know?
+    - textbox [ref=e153]
+  - button "Submit" [ref=e154] [cursor=pointer]
