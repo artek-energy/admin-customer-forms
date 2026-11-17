@@ -1,4 +1,4 @@
-const QUOTE_VERSION_ = "2026-11-17.1";
+const QUOTE_VERSION_ = "2026-11-17.2";
 const QUOTE_ACCOUNT_ = "sales@artek.energy";
 const QUOTE_LOG_NAME_ = "QuoteSubmissionLog";
 const QUOTE_LOCK_WAIT_MS_ = 5000;
@@ -31,8 +31,8 @@ function submitQuote_(event, form) {
   let record;
   let logRow;
   try {
-    const params = event && event.parameter;
-    if (!params || params.action !== form.action) {
+    const params = parseQuoteParams_(event);
+    if (params.action !== form.action) {
       throw quoteError_("INVALID_ACTION", "Invalid or missing action specified.");
     }
     const data = parseQuoteData_(params, form);
@@ -124,6 +124,30 @@ function submitQuote_(event, form) {
   }
 }
 
+function parseQuoteParams_(event) {
+  const params = Object.assign(Object.create(null), event && event.parameter);
+  const postData = event && event.postData;
+  if (!postData) {
+    return params;
+  }
+  const contentType = (postData.type || "").split(";")[0].trim().toLowerCase();
+  if (contentType && contentType !== "application/json" && contentType !== "text/plain") {
+    return params;
+  }
+
+  let body;
+  try {
+    body = JSON.parse(postData.contents);
+  } catch (error) {
+    throw quoteError_("INVALID_DATA", "Invalid JSON request body.");
+  }
+  if (!body || typeof body !== "object" || Array.isArray(body)) {
+    throw quoteError_("INVALID_DATA", "The JSON request body must be an object.");
+  }
+  // JSON body values take precedence over query parameters; form bodies use event.parameter.
+  return Object.assign(params, body);
+}
+
 function parseQuoteData_(params, form) {
   const data = {};
   Object.keys(params).forEach(function(key) {
@@ -142,7 +166,10 @@ function parseQuoteData_(params, form) {
   }
   form.nestedFields.forEach(function(key) {
     try {
-      const value = params[key] ? JSON.parse(params[key]) : {};
+      const input = params[key];
+      const value = input === undefined || input === ""
+        ? {}
+        : typeof input === "string" ? JSON.parse(input) : input;
       if (!value || typeof value !== "object" || Array.isArray(value)) {
         throw new Error("Expected an object");
       }

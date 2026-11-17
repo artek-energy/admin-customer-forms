@@ -92,15 +92,20 @@ For each project choose **Deploy > New deployment > Web app**:
 
 - **Execute as:** Me (`sales@artek.energy`).
 - **Who has access:** Anyone, including visitors without a Google login.
-- Use a description identifying the form and release `2026-11-17.1`.
+- Use a description identifying the form and release `2026-11-17.2`.
 
 Copy each **Web app** URL ending in `/exec`. A new project gets a new URL. The
 manifest's equivalent values are `USER_DEPLOYING` and `ANYONE_ANONYMOUS`.
 
 Open each `/exec` URL while signed out. Its read-only response should identify
-the expected `form` (`stationary` or `mobile`), `version: "2026-11-17.1"`, and
+the expected `form` (`stationary` or `mobile`), `version: "2026-11-17.2"`, and
 `status: "success"`. This checks deployment access and code identity, not the
 spreadsheet/PDF/email workflow.
+
+For an existing deployment, paste the regenerated `Code.gs`, then use
+**Deploy > Manage deployments > Edit > New version > Deploy** to publish the
+change while retaining its `/exec` URL. Saving source alone does not update a
+versioned deployment.
 
 ## Connect the frontend
 
@@ -110,6 +115,15 @@ The React form action names and field names remain compatible:
 | --- | --- | --- | --- |
 | Stationary | `/stationaryquote` | `submitStationaryQuote` | `REACT_APP_STATIONARY_QUOTE_URL` |
 | Mobile | `/mobilequote` | `submitQuote` | `REACT_APP_MOBILE_QUOTE_URL` |
+
+The browser forms continue sending `application/x-www-form-urlencoded`, with
+nested fields encoded as JSON strings. The backend also accepts a JSON object
+body through `application/json` or `text/plain`; nested fields can be objects or
+JSON strings. JSON body values override matching query parameters. Malformed
+JSON, non-object bodies, and invalid nested data return `INVALID_DATA` before
+storage or email operations. A simulated `doPost` event can omit the body MIME
+type. Keep the browser forms' current encoding: `application/json` introduces a
+CORS preflight requirement that JSON parsing alone does not address.
 
 Set these variables to the new sales-owned `/exec` URLs before building. These
 public endpoint URLs are embedded in the browser bundle; they are not secrets.

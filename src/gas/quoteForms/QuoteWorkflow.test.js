@@ -192,6 +192,7 @@ function loadQuoteApp(form, options = {}) {
   return {
     context, quoteSheet, sheets, spreadsheet, folder, lock,
     submit: (params = quoteParams(form)) => JSON.parse(context.doPost({ parameter: params }).text),
+    post: (event) => JSON.parse(context.doPost(event).text),
   };
 }
 
@@ -228,6 +229,27 @@ describe.each(["stationary", "mobile"])("%s quote workflow", (form) => {
     const retry = app.submit();
 
     expect(retry).toEqual(first);
+    expect(app.quoteSheet.appendRow).toHaveBeenCalledTimes(1);
+    expect(app.folder.createFile).toHaveBeenCalledTimes(1);
+    expect(app.context.MailApp.sendEmail).toHaveBeenCalledTimes(2);
+    expect(app.sheets[LOG_NAME].rows).toHaveLength(2);
+  });
+
+  test("merges native JSON fields and recognizes a form-encoded retry", () => {
+    const app = loadQuoteApp(form);
+    const body = quoteParams(form);
+    ["services", "application", form === "stationary" ? "system" : "vehicleDetails"]
+      .forEach((key) => { body[key] = JSON.parse(body[key]); });
+    delete body.company;
+
+    const first = app.post({
+      parameter: { action: "incorrect", email: "incorrect", company: CONTACT.company },
+      postData: { type: "application/json", contents: JSON.stringify(body) },
+    });
+
+    expect(first.status).toBe("success");
+    expect(app.quoteSheet.appendRow).toHaveBeenCalledWith(EXPECTED_ROWS[form]);
+    expect(app.submit()).toEqual(first);
     expect(app.quoteSheet.appendRow).toHaveBeenCalledTimes(1);
     expect(app.folder.createFile).toHaveBeenCalledTimes(1);
     expect(app.context.MailApp.sendEmail).toHaveBeenCalledTimes(2);
@@ -326,6 +348,51 @@ describe.each(["stationary", "mobile"])("%s quote workflow", (form) => {
   });
 });
 
+test.each(["application/json; charset=UTF-8", "text/plain", undefined])(
+  "accepts a JSON body with content type %s and stringified nested fields", (type) => {
+    const app = loadQuoteApp("mobile");
+    const result = app.post({ postData: { type, contents: JSON.stringify(quoteParams("mobile")) } });
+
+    expect(result.status).toBe("success");
+    expect(app.quoteSheet.appendRow).toHaveBeenCalledWith(EXPECTED_ROWS.mobile);
+  }
+);
+
+test.each([
+  ["stationary", "application/x-www-form-urlencoded;charset=UTF-8", "action=submitStationaryQuote"],
+  ["mobile", "multipart/form-data; boundary=quote", "--quote\r\nContent-Disposition: form-data; name=\"action\"\r\n\r\nsubmitQuote\r\n--quote--"],
+])("uses parsed %s form parameters for %s", (form, type, contents) => {
+  const app = loadQuoteApp(form);
+  const result = app.post({ parameter: quoteParams(form), postData: { type, contents } });
+
+  expect(result.status).toBe("success");
+  expect(app.quoteSheet.appendRow).toHaveBeenCalledWith(EXPECTED_ROWS[form]);
+});
+
+test.each(["{broken", "", "null", "[]", "false", "42", '"text"'])(
+  "rejects invalid JSON request body %s before reading services", (contents) => {
+    const app = loadQuoteApp("mobile");
+    const result = app.post({
+      parameter: quoteParams("mobile"),
+      postData: { type: "application/json", contents },
+    });
+
+    expect(result.code).toBe("INVALID_DATA");
+    expect(app.context.PropertiesService.getScriptProperties).not.toHaveBeenCalled();
+    expect(app.context.SpreadsheetApp.openById).not.toHaveBeenCalled();
+    expect(app.context.DriveApp.getFolderById).not.toHaveBeenCalled();
+    expect(app.context.MailApp.getRemainingDailyQuota).not.toHaveBeenCalled();
+    expectNoEffects(app);
+  }
+);
+
+test.each([undefined, ""])("defaults omitted or empty nested fields (%s) to an object", (services) => {
+  const app = loadQuoteApp("mobile");
+
+  expect(app.submit({ ...quoteParams("mobile"), services }).status).toBe("success");
+  expect(app.quoteSheet.rows[2].slice(11, 13)).toEqual([false, false]);
+});
+
 test.each([
   ["stationary", "services", "{broken", "INVALID_DATA"],
   ["stationary", "application", "[]", "INVALID_DATA"],
@@ -334,6 +401,10 @@ test.each([
   ["stationary", "system", '{"highDrawAppliances":[]}', "INVALID_DATA"],
   ["mobile", "vehicleDetails", "{broken", "INVALID_DATA"],
   ["mobile", "vehicleDetails", '{"highDrawAppliances":{"airConditioner":"true"}}', "INVALID_DATA"],
+  ["mobile", "services", [], "INVALID_DATA"],
+  ["mobile", "services", null, "INVALID_DATA"],
+  ["mobile", "services", false, "INVALID_DATA"],
+  ["mobile", "services", 0, "INVALID_DATA"],
   ["stationary", "firstName", " ", "INVALID_CONTACT"],
   ["mobile", "lastName", "", "INVALID_CONTACT"],
   ["stationary", "email", "not-an-email", "INVALID_EMAIL"],
