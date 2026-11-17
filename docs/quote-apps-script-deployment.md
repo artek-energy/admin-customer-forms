@@ -138,11 +138,23 @@ $env:REACT_APP_MOBILE_QUOTE_URL = 'PASTE_MOBILE_EXEC_URL'
 npm run build
 ```
 
-Publish the new `build/` artifacts through the existing S3/CloudFront hosting
-process. This repository does not configure or execute that deployment. Verify
-the uploaded HTML references the new hashed JavaScript, invalidate cached HTML
-as needed, and inspect the served bundle to confirm both new URLs. Environment
-variable changes after building do not update an already-published bundle.
+Publish the frontend through **AWS Amplify Hosting**, in **us-east-1**. The app
+serving `forms.artek.energy` is **admin-customer-forms**, app ID
+`d2ne8ul2rsgtw9`, production branch **main**. The separate `form-app` app has no
+branches and is not the deployment target. This mapping was verified on
+November 17, 2026.
+
+Amplify's console-managed build settings run `npm ci --cache .npm --prefer-offline`
+and `npm run build`, then publish `build/`. The repository is currently
+`jordan-artek/admin-customer-forms`; Amplify still records its former
+`artek-energy/admin-customer-forms` URL. Check the repository connection and job
+history if pushes do not start builds. A successful GitHub webhook delivery alone
+does not confirm that Amplify started or published a build.
+
+Verify the successful Amplify job uses the intended commit, the served HTML
+references the new hashed JavaScript, and that bundle contains both new URLs.
+Environment variable changes after building do not update an already-published
+bundle. Direct S3 uploads are not the established deployment process for this app.
 
 ## Verify before retiring the previous deployments
 
