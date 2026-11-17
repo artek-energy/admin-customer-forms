@@ -1,13 +1,15 @@
-import React, { useState } from "react"
+import React, { useRef, useState } from "react"
 import TextInput from "./TextInput"
 import RadioButton from "./RadioButton"
 import CheckboxInput from "./CheckboxInput"
 import TextArea from "./TextArea"
 import NumberInput from "./NumberInput"
+import { getSubmissionAttempt } from "../utils/quoteSubmission"
 import { ToastContainer, toast } from "react-toastify"
 import "react-toastify/dist/ReactToastify.css"
 
 const GAS_WEB_APP_URL =
+  (process.env.REACT_APP_STATIONARY_QUOTE_URL || "").trim() ||
   "https://script.google.com/macros/s/AKfycbw4ELhJm9Hc3hPRjh8EIVH9n8MrX41VqvSa_XkrJJoTwG-gysex6QjZvKWb4pexyXll/exec"
 
 const StationaryQuoteForm = () => {
@@ -67,6 +69,7 @@ const StationaryQuoteForm = () => {
   })
 
   const [isSubmitting, setIsSubmitting] = useState(false)
+  const submissionAttempt = useRef(null)
 
   const handleInputChange = (e) => {
     const { name, value, type, checked } = e.target
@@ -92,6 +95,11 @@ const StationaryQuoteForm = () => {
 
       // Add the required "action" parameter
       urlEncodedData.append("action", "submitStationaryQuote")
+      submissionAttempt.current = getSubmissionAttempt(
+        submissionAttempt.current,
+        formData
+      )
+      urlEncodedData.append("submissionId", submissionAttempt.current.id)
 
       // Flatten and encode form data
       for (const key in formData) {
@@ -117,7 +125,9 @@ const StationaryQuoteForm = () => {
       const responseData = JSON.parse(responseText)
 
       if (response.ok && responseData.status === "success") {
-        toast.success("Form submitted successfully!")
+        toast.success(responseData.reference
+          ? `Form submitted successfully! Reference: ${responseData.reference}`
+          : "Form submitted successfully!")
         // Reset form state
         setFormData({
           firstName: "",
@@ -173,15 +183,16 @@ const StationaryQuoteForm = () => {
             additionalDetails: "",
           },
         })
+        submissionAttempt.current = null
       } else {
-        throw new Error(responseData.message || "Unknown error occurred.")
+        throw new Error(responseData.message || "Unable to submit the form. Please contact sales@artek.energy.")
       }
     } catch (error) {
-      const errorMessage = error
       console.error("Error submitting form:", error)
-      toast.error(
-        "Failed to submit the form. Please try again. " + errorMessage
-      )
+      const errorMessage = error instanceof TypeError || error instanceof SyntaxError
+        ? "We couldn't confirm your submission. Please contact sales@artek.energy before submitting again."
+        : error.message || "Unable to submit the form. Please contact sales@artek.energy."
+      toast.error(errorMessage)
     } finally {
       setIsSubmitting(false)
     }
@@ -245,7 +256,7 @@ const StationaryQuoteForm = () => {
         value={formData.state}
         onChange={handleInputChange}
       />
-      <NumberInput
+      <TextInput
         label="Postal Code:"
         name="postalCode"
         value={formData.postalCode}

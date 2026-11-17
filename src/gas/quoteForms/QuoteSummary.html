@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8">
+    <title><?= formTitle ?> Submission Summary</title>
+    <style>
+      @page {
+        margin: 36pt;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        margin: 0;
+        color: #333333;
+        font-family: "Segoe UI", Arial, sans-serif;
+        font-size: 10pt;
+        line-height: 1.4;
+      }
+
+      .header {
+        background: #38526e;
+        color: #ffffff;
+        padding: 20pt 22pt;
+      }
+
+      .eyebrow {
+        font-size: 9pt;
+        font-weight: 700;
+        letter-spacing: 1pt;
+        margin: 0 0 5pt;
+        text-transform: uppercase;
+      }
+
+      h1 {
+        color: #ffffff;
+        font-size: 24pt;
+        line-height: 1.2;
+        margin: 0 0 14pt;
+      }
+
+      .metadata {
+        border-collapse: collapse;
+        color: #ffffff;
+        table-layout: fixed;
+        width: 100%;
+      }
+
+      .metadata td {
+        padding: 0 12pt 0 0;
+        vertical-align: top;
+      }
+
+      .meta-label {
+        color: #dce5ee;
+        display: block;
+        font-size: 8pt;
+        margin-bottom: 3pt;
+        text-transform: uppercase;
+      }
+
+      .meta-value {
+        font-size: 10pt;
+        font-weight: 700;
+        overflow-wrap: anywhere;
+        word-wrap: break-word;
+      }
+
+      .notice {
+        background: #f2f5f8;
+        border-left: 3pt solid #38526e;
+        margin: 16pt 0;
+        padding: 9pt 12pt;
+      }
+
+      h2 {
+        border-bottom: 1.5pt solid #38526e;
+        color: #38526e;
+        font-size: 13pt;
+        margin: 17pt 0 7pt;
+        padding-bottom: 4pt;
+        page-break-after: avoid;
+        break-after: avoid;
+      }
+
+      .details {
+        border-collapse: collapse;
+        table-layout: fixed;
+        width: 100%;
+      }
+
+      .details td {
+        border-bottom: 1px solid #e4e7ec;
+        overflow-wrap: anywhere;
+        padding: 6pt 8pt;
+        vertical-align: top;
+        white-space: pre-wrap;
+        word-wrap: break-word;
+      }
+
+      .details tr:nth-child(even) td {
+        background: #f7f9fb;
+      }
+
+      .label {
+        color: #444444;
+        font-weight: 700;
+        width: 38%;
+      }
+
+      .footer {
+        border-top: 1px solid #d0d5dd;
+        color: #667085;
+        font-size: 9pt;
+        margin-top: 18pt;
+        padding-top: 9pt;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="header">
+      <p class="eyebrow">Artek Energy</p>
+      <h1><?= formTitle ?> Submission Summary</h1>
+      <table class="metadata">
+        <tr>
+          <td>
+            <span class="meta-label">Quote Reference</span>
+            <span class="meta-value"><?= reference ?></span>
+          </td>
+          <td>
+            <span class="meta-label">Submitted</span>
+            <span class="meta-value"><?= submittedAt ?></span>
+          </td>
+        </tr>
+      </table>
+    </div>
+
+    <p class="notice">This is a summary of your quotation request. It is not a priced quotation.</p>
+
+    <? for (const section of sections) { ?>
+      <h2><?= section.title ?></h2>
+      <table class="details">
+        <? for (const row of section.rows) { ?>
+          <tr>
+            <td class="label"><?= row.label ?></td>
+            <td><?= row.value ?></td>
+          </tr>
+        <? } ?>
+      </table>
+    <? } ?>
+
+    <p class="footer">Questions about this request? Contact sales@artek.energy and include reference <?= reference ?>.</p>
+  </body>
+</html>

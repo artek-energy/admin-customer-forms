@@ -1,13 +1,15 @@
-import React, { useState } from "react";
+import React, { useRef, useState } from "react";
 import TextInput from "./TextInput";
 import CheckboxInput from "./CheckboxInput";
 import NumberInput from "./NumberInput";
 import RadioButton from "./RadioButton";
 import TextArea from "./TextArea";
+import { getSubmissionAttempt } from "../utils/quoteSubmission";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 
 const GAS_WEB_APP_URL =
+  (process.env.REACT_APP_MOBILE_QUOTE_URL || "").trim() ||
   "https://script.google.com/macros/s/AKfycbzSGHTVZ0SMzSz30zV6NWE86bOmgzjxzCTYUzHAOh4PYUckCTFGs3F1atSwTcPxUIADZg/exec";
 
 const MobileQuoteForm = () => {
@@ -67,6 +69,7 @@ const MobileQuoteForm = () => {
   });
 
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const submissionAttempt = useRef(null);
 
   const handleInputChange = (e) => {
     const { name, value, type, checked } = e.target;
@@ -92,6 +95,11 @@ const MobileQuoteForm = () => {
   
       // Add the required "action" parameter
       urlEncodedData.append("action", "submitQuote");
+      submissionAttempt.current = getSubmissionAttempt(
+        submissionAttempt.current,
+        formData
+      );
+      urlEncodedData.append("submissionId", submissionAttempt.current.id);
   
       // Flatten and encode form data
       for (const key in formData) {
@@ -117,7 +125,9 @@ const MobileQuoteForm = () => {
       const responseData = JSON.parse(responseText);
   
       if (response.ok && responseData.status === "success") {
-        toast.success("Form submitted successfully!");
+        toast.success(responseData.reference
+          ? `Form submitted successfully! Reference: ${responseData.reference}`
+          : "Form submitted successfully!");
         setFormData({
           firstName: "",
           lastName: "",
@@ -172,12 +182,16 @@ const MobileQuoteForm = () => {
           timeline: "",
           additionalDetails: "",
         });
+        submissionAttempt.current = null;
       } else {
-        throw new Error(responseData.message || "Unknown error occurred.");
+        throw new Error(responseData.message || "Unable to submit the form. Please contact sales@artek.energy.");
       }
     } catch (error) {
       console.error("Error submitting form:", error);
-      toast.error("Failed to submit the form. Please try again.");
+      const errorMessage = error instanceof TypeError || error instanceof SyntaxError
+        ? "We couldn't confirm your submission. Please contact sales@artek.energy before submitting again."
+        : error.message || "Unable to submit the form. Please contact sales@artek.energy.";
+      toast.error(errorMessage);
     } finally {
       setIsSubmitting(false);
     }
@@ -194,6 +208,7 @@ const MobileQuoteForm = () => {
         name="firstName"
         value={formData.firstName}
         onChange={handleInputChange}
+        required
       />
 
       <TextInput
@@ -201,6 +216,7 @@ const MobileQuoteForm = () => {
         name="lastName"
         value={formData.lastName}
         onChange={handleInputChange}
+        required
       />
 
       <TextInput
@@ -213,8 +229,10 @@ const MobileQuoteForm = () => {
       <TextInput
         label="Email:"
         name="email"
+        type="email"
         value={formData.email}
         onChange={handleInputChange}
+        required
       />
 
       <TextInput
@@ -252,7 +270,7 @@ const MobileQuoteForm = () => {
         onChange={handleInputChange}
       />
 
-      <NumberInput
+      <TextInput
         label="Shipping Postal Code:"
         name="postalCode"
         value={formData.postalCode}

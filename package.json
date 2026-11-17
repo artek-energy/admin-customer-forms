@@ -19,6 +19,7 @@
   "scripts": {
     "start": "react-scripts start",
     "build": "react-scripts build",
+    "package:quotes": "node scripts/package-quote-apps.cjs",
     "test": "react-scripts test",
     "eject": "react-scripts eject"
   },
