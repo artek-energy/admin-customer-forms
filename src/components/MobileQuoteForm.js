@@ -10,7 +10,7 @@ import "react-toastify/dist/ReactToastify.css";
 
 const GAS_WEB_APP_URL =
   (process.env.REACT_APP_MOBILE_QUOTE_URL || "").trim() ||
-  "https://script.google.com/macros/s/AKfycbyX6gR4WcOXfSBLaps0IxurOL8mt359ANcV61ABRmRY3OGKUDF7-Up4wMeQvm3qFzvVWA/exec";
+  "https://script.google.com/macros/s/AKfycby8rT4Ca8JwuV7LJ9AK-Tk0vNsf3u4aY3UrDaPAd1RT6M0vW3dh_fQxoWmRDaHGNh270A/exec";
 
 const MobileQuoteForm = () => {
   const [formData, setFormData] = useState({

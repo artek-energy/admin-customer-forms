@@ -10,7 +10,7 @@ import "react-toastify/dist/ReactToastify.css"
 
 const GAS_WEB_APP_URL =
   (process.env.REACT_APP_STATIONARY_QUOTE_URL || "").trim() ||
-  "https://script.google.com/macros/s/AKfycbxY4aJ8Xm5wIK5SJJFsHS9bncx2vi1_JrnxYMi4HJzHGn3dWCebOJdhg3yjVDsd6cGAAA/exec"
+  "https://script.google.com/macros/s/AKfycbxB3VIq5VefHxSbryH2JBWuQwJ87uAgC_DV5R2LpOXUfjn2n42Od4NWvt1ladY4DQjnWQ/exec"
 
 const StationaryQuoteForm = () => {
   const [formData, setFormData] = useState({
