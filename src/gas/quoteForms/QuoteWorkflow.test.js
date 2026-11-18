@@ -173,7 +173,7 @@ function loadQuoteApp(form, options = {}) {
     SpreadsheetApp: { openById: jest.fn(() => spreadsheet), flush: jest.fn() },
     DriveApp: { getFolderById: jest.fn(() => folder) },
     MailApp: { getRemainingDailyQuota: jest.fn(() => 100), sendEmail: jest.fn() },
-    HtmlService: { createTemplateFromFile: jest.fn(() => ({ evaluate: () => ({ getBlob: () => blob }) })) },
+    HtmlService: { createTemplateFromFile: jest.fn(() => ({ evaluate: jest.fn(() => ({ getBlob: jest.fn(() => blob) })) })) },
     ContentService: {
       MimeType: { JSON: "application/json" },
       createTextOutput: (text) => ({ text, setMimeType() { return this; } }),
@@ -221,6 +221,11 @@ describe.each(["stationary", "mobile"])("%s quote workflow", (form) => {
       .toEqual([CONTACT.email, "sales@artek.energy"]);
     expect(app.sheets[LOG_NAME].rows[1][4]).toBe("COMPLETE");
     expect(app.lock.releaseLock).toHaveBeenCalledTimes(1);
+    const template = app.context.HtmlService.createTemplateFromFile.mock.results[0].value;
+    expect(template.formTitle).toBe(form === "stationary" ? "Stationary Quote" : "Mobile Quote");
+    expect(template.reference).toBe(result.reference);
+    expect(template.sections[0].rows[0]).toEqual({ label: "First Name", value: CONTACT.firstName });
+    expect(template.evaluate).toHaveBeenCalledTimes(1);
   });
 
   test("returns the original success on retry without repeating completed work", () => {
@@ -345,6 +350,47 @@ describe.each(["stationary", "mobile"])("%s quote workflow", (form) => {
     expect(app.context.MailApp.sendEmail).not.toHaveBeenCalled();
     app.context.initializeQuoteLog();
     expect(app.spreadsheet.insertSheet).toHaveBeenCalledTimes(1);
+  });
+
+  test("checks the summary template with setup data without creating a submission", () => {
+    const app = loadQuoteApp(form);
+    const result = app.context.checkQuoteSetup();
+    const template = app.context.HtmlService.createTemplateFromFile.mock.results[0].value;
+
+    expect(result.summaryTemplateReady).toBe(true);
+    expect(app.context.HtmlService.createTemplateFromFile).toHaveBeenCalledWith("QuoteSummary");
+    expect(template.formTitle).toBe(form === "stationary" ? "Stationary Quote" : "Mobile Quote");
+    expect(template.reference).toBe("SETUP-CHECK");
+    expect(template.submittedAt).toEqual(expect.any(String));
+    expect(template.sections[0].rows[0]).toEqual({ label: "First Name", value: "N/A" });
+    expect(template.sections.reduce((count, section) => count + section.rows.length, 0))
+      .toBe(form === "stationary" ? 42 : 44);
+    expect(template.evaluate).toHaveBeenCalledTimes(1);
+    expect(template.evaluate.mock.results[0].value.getBlob).not.toHaveBeenCalled();
+    expect(app.spreadsheet.insertSheet).not.toHaveBeenCalled();
+    expectNoEffects(app);
+  });
+
+  test("rejects a missing summary HTML file during setup without side effects", () => {
+    const app = loadQuoteApp(form);
+    app.context.HtmlService.createTemplateFromFile.mockImplementation(() => {
+      throw new Error("No HTML file named QuoteSummary was found.");
+    });
+
+    expect(() => app.context.checkQuoteSetup()).toThrow(/QuoteSummary/);
+    expect(app.spreadsheet.insertSheet).not.toHaveBeenCalled();
+    expectNoEffects(app);
+  });
+
+  test("rejects a summary template evaluation error during setup without side effects", () => {
+    const app = loadQuoteApp(form);
+    app.context.HtmlService.createTemplateFromFile.mockReturnValue({ evaluate: () => {
+      throw new Error("Template evaluation failed");
+    } });
+
+    expect(() => app.context.checkQuoteSetup()).toThrow(/Template evaluation failed/);
+    expect(app.spreadsheet.insertSheet).not.toHaveBeenCalled();
+    expectNoEffects(app);
   });
 });
 

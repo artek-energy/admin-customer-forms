@@ -28,6 +28,11 @@ The generated projects are in `tmp/quote-deployment/stationary/` and
 | `appsscript.json` | Replace the project's manifest after enabling manifest display in Project Settings. |
 | `script-properties.json` | Enter these key/value pairs in Project Settings > Script Properties; this is configuration, not another script file. |
 
+In each Apps Script editor, use **Files > + > HTML**, name the file
+**QuoteSummary**, and replace its default contents with the generated
+`QuoteSummary.html`. The Files list must show both `Code.gs` and
+`QuoteSummary.html`. The PDF step requires this template before email can be sent.
+
 These generated files are ignored by Git. Rebuild them after editing their
 sources in `src/gas/quoteForms/`, `src/gas/stationaryQuote/`, or
 `src/gas/mobileQuote/`. The packaging command preserves an existing
@@ -77,13 +82,15 @@ In each project's editor, while signed in as sales:
 
 1. Run **checkQuoteSetup** and authorize its requested permissions. It verifies
    the executing account, property values, existing tab and column capacity,
-   folder readability, mail quota, and any existing submission log. It sends no
-   email and creates no quote or PDF. Folder readability is not proof of write
+   folder readability, HTML template rendering, mail quota, and any existing
+   submission log. It sends no email and creates no quote or PDF file.
+   Folder readability is not proof of write
    access; the later test submission verifies the complete operation.
 2. Run **initializeQuoteLog**. It creates the `QuoteSubmissionLog` tab with its
    headers if absent. An existing log is validated, not overwritten. The existing
    quotation tab is not modified.
-3. Confirm the result reports `submissionLogReady: true` and the correct quote
+3. Confirm the result reports `submissionLogReady: true`,
+   `summaryTemplateReady: true`, and the correct quote
    tab. Never select the existing quote tab as the submission-log destination.
 
 ## Create the two web app deployments
@@ -92,13 +99,13 @@ For each project choose **Deploy > New deployment > Web app**:
 
 - **Execute as:** Me (`sales@artek.energy`).
 - **Who has access:** Anyone, including visitors without a Google login.
-- Use a description identifying the form and release `2026-11-17.2`.
+- Use a description identifying the form and release `2026-11-17.3`.
 
 Copy each **Web app** URL ending in `/exec`. A new project gets a new URL. The
 manifest's equivalent values are `USER_DEPLOYING` and `ANYONE_ANONYMOUS`.
 
 Open each `/exec` URL while signed out. Its read-only response should identify
-the expected `form` (`stationary` or `mobile`), `version: "2026-11-17.2"`, and
+the expected `form` (`stationary` or `mobile`), `version: "2026-11-17.3"`, and
 `status: "success"`. This checks deployment access and code identity, not the
 spreadsheet/PDF/email workflow.
 
@@ -145,9 +152,8 @@ branches and is not the deployment target. This mapping was verified on
 November 17, 2026.
 
 Amplify's console-managed build settings run `npm ci --cache .npm --prefer-offline`
-and `npm run build`, then publish `build/`. The repository is currently
-`jordan-artek/admin-customer-forms`; Amplify still records its former
-`artek-energy/admin-customer-forms` URL. Check the repository connection and job
+and `npm run build`, then publish `build/`. The connected repository is
+`artek-energy/admin-customer-forms`. Check the repository connection and job
 history if pushes do not start builds. A successful GitHub webhook delivery alone
 does not confirm that Amplify started or published a build.
 

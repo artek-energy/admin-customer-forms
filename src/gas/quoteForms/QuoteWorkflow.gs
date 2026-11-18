@@ -1,4 +1,4 @@
-const QUOTE_VERSION_ = "2026-11-17.2";
+const QUOTE_VERSION_ = "2026-11-17.3";
 const QUOTE_ACCOUNT_ = "sales@artek.energy";
 const QUOTE_LOG_NAME_ = "QuoteSubmissionLog";
 const QUOTE_LOCK_WAIT_MS_ = 5000;
@@ -239,12 +239,14 @@ function checkQuoteSetup_(form) {
   if (log) {
     validateQuoteLog_(log);
   }
+  quoteTemplate_({}, form, "SETUP-CHECK", new Date().toISOString()).evaluate();
   const result = {
     form: form.key, version: QUOTE_VERSION_, account: QUOTE_ACCOUNT_,
     quoteSheet: sheet.getName(), expectedColumns: quoteFields_(form).length,
     pdfFolder: folder.getName(), submissionLogReady: Boolean(log),
+    summaryTemplateReady: true,
     remainingEmailRecipients: MailApp.getRemainingDailyQuota(),
-    note: "Read access checked. No quote, PDF, or email was created; write access still requires a test submission."
+    note: "Read access and HTML template checked. No quote, PDF file, or email was created; write access still requires a test submission."
   };
   console.log(JSON.stringify(result));
   return result;
@@ -368,7 +370,7 @@ function quoteDisplay_(value, field) {
   return String(value);
 }
 
-function createQuotePdf_(data, form, reference, receivedAt, folder) {
+function quoteTemplate_(data, form, reference, receivedAt) {
   const template = HtmlService.createTemplateFromFile("QuoteSummary");
   template.formTitle = form.title;
   template.reference = reference;
@@ -378,7 +380,12 @@ function createQuotePdf_(data, form, reference, receivedAt, folder) {
       return { label: field.label, value: quoteDisplay_(quoteValue_(data, field.path), field) };
     }) };
   });
-  const blob = template.evaluate().getBlob().setName(reference + ".html")
+  return template;
+}
+
+function createQuotePdf_(data, form, reference, receivedAt, folder) {
+  const blob = quoteTemplate_(data, form, reference, receivedAt)
+    .evaluate().getBlob().setName(reference + ".html")
     .getAs(MimeType.PDF).setName(reference + ".pdf");
   return folder.createFile(blob);
 }
